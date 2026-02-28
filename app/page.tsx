@@ -1,4 +1,4 @@
-import BookCard from "@/components/book/BookCard"
+import BookCarousel from "@/components/carousel/BookCarousel"
 
 export default function Home() {
   return (
@@ -16,13 +16,13 @@ export default function Home() {
         </button>
       </section>
 
-      {/* Temporary BookCard Preview */}
-      <section className="flex justify-center pb-20">
-        <BookCard />
+      {/* Carousel */}
+      <section>
+        <BookCarousel />
       </section>
 
       {/* Monthly Cue */}
-      <section className="text-center pb-16">
+      <section className="text-center py-16">
         <p className="text-neutral-600 text-lg">
           One book at a time is enough.
         </p>

@@ -13,8 +13,7 @@ export default function BookCard({ coverUrl }: BookCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
       whileHover={{ y: -4 }}
-      className="relative w-44 aspect-[2/3] rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 bg-neutral-200"
-    >
+      className="relative w-44 aspect-[2/3] rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 bg-neutral-200"    >
       {coverUrl ? (
         <img
           src={coverUrl}
