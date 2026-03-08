@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 
 export default function BookPage() {
+
   const { id } = useParams()
   const router = useRouter()
 
@@ -15,21 +16,26 @@ export default function BookPage() {
   const [favourite, setFavourite] = useState(false)
 
   useEffect(() => {
+
     async function fetchBook() {
+
       const res = await fetch(
         `https://www.googleapis.com/books/v1/volumes/${id}`
       )
 
       const data = await res.json()
+
       setBook(data)
+
     }
 
     fetchBook()
+
   }, [id])
 
   if (!book) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center text-neutral-600">
         Loading book...
       </div>
     )
@@ -37,11 +43,20 @@ export default function BookPage() {
 
   const info = book.volumeInfo
 
+  const cleanDescription = info.description
+    ? info.description.replace(/<[^>]*>?/gm, "")
+    : ""
+
   function saveBook() {
+
     const stored = localStorage.getItem("books")
     const books = stored ? JSON.parse(stored) : []
 
-    books.push({
+    const existingIndex = books.findIndex(
+      (b: any) => b.id === book.id
+    )
+
+    const newBook = {
       id: book.id,
       title: info.title,
       authors: info.authors,
@@ -50,68 +65,69 @@ export default function BookPage() {
       rating,
       startDate,
       finishDate,
-      favourite
-    })
+      favourite,
+      addedAt: Date.now()
+    }
+
+    if (existingIndex !== -1) {
+
+      books[existingIndex] = newBook
+
+    } else {
+
+      books.push(newBook)
+
+    }
 
     localStorage.setItem("books", JSON.stringify(books))
 
+    window.dispatchEvent(new Event("booksUpdated"))
+
     router.push("/shelves")
+
   }
 
   return (
-    <main className="min-h-screen bg-[#f8f6f1] px-8 py-20 text-neutral-800">
 
-      <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12">
+    <main className="min-h-screen bg-[#f8f6f1] px-12 py-24 text-neutral-800">
 
-        {/* Cover */}
-        {info.imageLinks?.thumbnail && (
-          <img
-            src={info.imageLinks.thumbnail}
-            alt={info.title}
-            className="w-60 rounded shadow"
-          />
-        )}
+      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16">
 
-        {/* Details */}
+        {/* LEFT SIDE */}
+
         <div>
 
-          <h1 className="text-3xl font-serif mb-2">
-            {info.title}
-          </h1>
-
-          <p className="text-neutral-600 mb-6">
-            {info.authors?.join(", ")}
-          </p>
-
-          {info.description && (
-            <p className="text-sm text-neutral-700 mb-8">
-              {info.description}
-            </p>
+          {info.imageLinks?.thumbnail && (
+            <img
+              src={info.imageLinks.thumbnail}
+              alt={info.title}
+              className="w-72 rounded-lg shadow-md mb-8"
+            />
           )}
 
           {/* Shelf */}
-          <div className="mb-4">
-            <label className="block mb-1 text-sm">Shelf</label>
 
-            <select
-              value={shelf}
-              onChange={(e) => setShelf(e.target.value)}
-              className="border rounded px-3 py-2"
-            >
-              <option value="currently-reading">Currently Reading</option>
-              <option value="want-to-read">Want to Read</option>
-              <option value="finished">Finished</option>
-              <option value="incomplete">Incomplete</option>
-            </select>
-          </div>
+          <select
+            value={shelf}
+            onChange={(e) => setShelf(e.target.value)}
+            className="w-72 border border-neutral-300 rounded-md px-4 py-3 text-base bg-white text-black mb-6"
+          >
+            <option value="currently-reading">Currently Reading</option>
+            <option value="want-to-read">Want to Read</option>
+            <option value="finished">Finished</option>
+            <option value="incomplete">Incomplete</option>
+          </select>
 
           {/* Rating */}
-          <div className="flex gap-2 mb-4">
+
+          <div className="flex gap-3 mb-8">
+
             {[1,2,3,4,5].map((star) => (
+
               <button
                 key={star}
                 onClick={() => setRating(star)}
-                className={`text-xl ${
+                className={`text-3xl ${
                   star <= rating
                     ? "text-yellow-500"
                     : "text-neutral-300"
@@ -119,50 +135,75 @@ export default function BookPage() {
               >
                 ★
               </button>
+
             ))}
+
           </div>
 
           {/* Dates */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
+
+          <div className="flex gap-4 mb-8">
 
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="border rounded px-3 py-2"
+              className="border border-neutral-300 rounded-md px-4 py-3"
             />
 
             <input
               type="date"
               value={finishDate}
               onChange={(e) => setFinishDate(e.target.value)}
-              className="border rounded px-3 py-2"
+              className="border border-neutral-300 rounded-md px-4 py-3"
             />
 
           </div>
 
           {/* Favourite */}
+
           <button
             onClick={() => setFavourite(!favourite)}
-            className="mb-6 text-xl"
+            className="mb-8 text-xl"
           >
             {favourite ? "❤️ Favourite" : "♡ Favourite"}
           </button>
 
           {/* Save */}
-          <div>
-            <button
-              onClick={saveBook}
-              className="px-6 py-3 bg-black text-white rounded-lg"
-            >
-              Save to Shelf
-            </button>
-          </div>
+
+          <button
+            onClick={saveBook}
+            className="px-8 py-3 bg-black text-white rounded-md"
+          >
+            Save to Shelf
+          </button>
+
+        </div>
+
+        {/* RIGHT SIDE */}
+
+        <div>
+
+          <h1 className="text-4xl font-serif mb-3">
+            {info.title}
+          </h1>
+
+          <p className="text-lg text-neutral-600 mb-8">
+            {info.authors?.join(", ")}
+          </p>
+
+          {cleanDescription && (
+            <p className="text-neutral-700 leading-relaxed whitespace-pre-line">
+              {cleanDescription}
+            </p>
+          )}
 
         </div>
 
       </div>
 
     </main>
+
   )
+
 }

@@ -59,7 +59,12 @@ export default function AddBookModal({ isOpen, onClose }: Props) {
             thumbnail: item.volumeInfo.imageLinks?.thumbnail
           })) || []
 
-        setResults(books)
+        const uniqueBooks = books.filter(
+            (book, index, self) =>
+              index === self.findIndex((b) => b.id === book.id)
+          )
+          
+          setResults(uniqueBooks)
         setHighlightedIndex(0) // reset selection
       } catch (err) {
         console.error(err)
@@ -166,13 +171,13 @@ export default function AddBookModal({ isOpen, onClose }: Props) {
 
         {/* Results */}
         <div className="space-y-4">
-          {results.map((book, index) => (
-            <div
-              key={book.id}
-              onClick={() => {
-                handleClose()
-                router.push(`/books/${book.id}`)
-              }}
+        {results.map((book, index) => (
+  <div
+    key={`${book.id}-${index}`}
+    onClick={() => {
+      handleClose()
+      router.push(`/books/${book.id}`)
+    }}
               className={`flex items-center gap-4 p-3 rounded-lg cursor-pointer transition ${
                 highlightedIndex === index
                   ? "bg-neutral-200"
